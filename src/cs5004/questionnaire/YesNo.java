@@ -1,14 +1,23 @@
 package cs5004.questionnaire;
 
 public class YesNo implements Question{
+  private String prompt;
+  private String answer;
+  private boolean required;
+
+  public YesNo(String prompt, boolean required) {
+    this.prompt = prompt;
+    this.answer = "";
+    this.required = required;
+  }
   @Override
   public String getPrompt() {
-    return null;
+    return prompt;
   }
 
   @Override
   public boolean inRequired() {
-    return false;
+    return required;
   }
 
   @Override
@@ -18,7 +27,7 @@ public class YesNo implements Question{
 
   @Override
   public String getAnswer() {
-    return null;
+    return answer;
   }
 
   @Override
