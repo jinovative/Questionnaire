@@ -18,13 +18,24 @@ public class Likert implements Question{
   }
 
   @Override
-  public boolean inRequired() {
+  public boolean isRequired() {
     return required;
   }
 
   @Override
   public void answer(String answer) {
-
+    answer = answer.toLowerCase();
+    boolean validAnswer = false;
+    for (LikertResponseOption option : LikertResponseOption.values()) {
+      if (option.getText().toLowerCase().equalsIgnoreCase(answer)) {
+        this.answer = answer;
+        validAnswer = true;
+        break;
+      }
+    }
+    if (!validAnswer) {
+      throw new IllegalArgumentException("Invalid input");
+    }
   }
 
   @Override

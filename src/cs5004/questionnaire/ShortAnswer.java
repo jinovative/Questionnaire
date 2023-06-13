@@ -16,13 +16,17 @@ public class ShortAnswer implements Question{
   }
 
   @Override
-  public boolean inRequired() {
+  public boolean isRequired() {
     return required;
   }
 
   @Override
   public void answer(String answer) {
-
+    if (answer.length() <= 280) {
+      this.answer = answer;
+    } else {
+      throw new IllegalArgumentException("Invalid input");
+    }
   }
 
   @Override

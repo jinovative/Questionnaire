@@ -17,7 +17,7 @@ public interface Question {
    *
    * @return true if the question is required, false otherwise
    */
-  boolean inRequired();
+  boolean isRequired();
 
   /**
    * Answers the question with the provided answer.
