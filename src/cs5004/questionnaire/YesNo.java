@@ -1,15 +1,25 @@
 package cs5004.questionnaire;
 
-public class YesNo implements Question{
+/**
+ * Represents a Yes/No question implementation of the {@link Question} interface.
+ */
+public class YesNo implements Question {
   private String prompt;
   private String answer;
   private boolean required;
 
+  /**
+   * Constructs a new Yes/No question with the given prompt and required flag.
+   *
+   * @param prompt   the question prompt
+   * @param required true if the question is required, false otherwise
+   */
   public YesNo(String prompt, boolean required) {
     this.prompt = prompt;
     this.answer = "";
     this.required = required;
   }
+
   @Override
   public String getPrompt() {
     return prompt;
@@ -36,6 +46,8 @@ public class YesNo implements Question{
 
   @Override
   public Question copy() {
-    return null;
+    YesNo copy = new YesNo(prompt, required);
+    copy.answer = this.answer;
+    return copy;
   }
 }

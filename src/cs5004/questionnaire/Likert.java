@@ -1,10 +1,19 @@
 package cs5004.questionnaire;
 
-public class Likert implements Question{
+/**
+ * Represents a short answer question implementation of the {@link Question} interface.
+ */
+public class Likert implements Question {
   private String prompt;
   private String answer;
   private boolean required;
 
+  /**
+   * Constructs a new short answer question with the given prompt and required flag.
+   *
+   * @param prompt   the question prompt
+   * @param required true if the question is required, false otherwise
+   */
   public Likert(String prompt, boolean required) {
     this.prompt = prompt;
     this.answer = "";
@@ -45,6 +54,8 @@ public class Likert implements Question{
 
   @Override
   public Question copy() {
-    return null;
+    Likert copy = new Likert(prompt, required);
+    copy.answer = this.answer;
+    return copy;
   }
 }
