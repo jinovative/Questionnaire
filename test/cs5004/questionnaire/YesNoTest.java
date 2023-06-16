@@ -1,85 +1,84 @@
 package cs5004.questionnaire;
 
-import org.junit.Before;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests for the {@link YesNo} class.
  */
 public class YesNoTest {
 
-  private YesNo question;
-
-  /**
-   * Sets up the test fixture by creating a {@link YesNo} instance.
-   */
-  @Before
-  public void setUp() {
-    question = new YesNo("Is this a question?", true);
-  }
-
-  /**
-   * Tests the {@link YesNo#getPrompt()} method.
-   */
   @Test
-  public void testGetPrompt() {
-    assertEquals("Is this a question?", question.getPrompt());
+  public void testConstructor_ValidArguments() {
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+
+    assertEquals("Sample Yes/No Question", yesNo.getPrompt());
+    assertTrue(yesNo.isRequired());
+    assertEquals("", yesNo.getAnswer());
   }
 
-  /**
-   * Tests the {@link YesNo#isRequired()} method.
-   */
-  @Test
-  public void testIsRequired() {
-    assertTrue(question.isRequired());
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructor_NullPrompt() {
+    new YesNo(null, true); //invalid input
   }
 
-  /**
-   * Tests the {@link YesNo#answer(String)} method with a valid input ("Yes").
-   */
   @Test
   public void testAnswer_ValidInput_Yes() {
-    question.answer("Yes");
-    assertEquals("Yes", question.getAnswer());
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+
+    yesNo.answer("Yes");
+    assertEquals("Yes", yesNo.getAnswer());
   }
 
-  /**
-   * Tests the {@link YesNo#answer(String)} method with a valid input ("No").
-   */
   @Test
   public void testAnswer_ValidInput_No() {
-    question.answer("No");
-    assertEquals("No", question.getAnswer());
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+
+    yesNo.answer("No");
+    assertEquals("No", yesNo.getAnswer());
   }
 
-  /**
-   * Tests the {@link YesNo#answer(String)} method with an invalid input.
-   * Expects an {@link IllegalArgumentException} to be thrown.
-   */
   @Test(expected = IllegalArgumentException.class)
-  public void testAnswer_InvalidInput() {
-    question.answer("Maybe");
+  public void testAnswer_InvalidAnswer() {
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+
+    yesNo.answer("Maybe");
   }
 
-  /**
-   * Tests the {@link YesNo#getAnswer()} method.
-   */
-  @Test
-  public void testGetAnswer() {
-    assertEquals("", question.getAnswer());
-  }
-
-  /**
-   * Tests the {@link YesNo#copy()} method.
-   */
   @Test
   public void testCopy() {
-    question.answer("Yes");
-    Question copy = question.copy();
-    assertEquals(question.getPrompt(), copy.getPrompt());
-    assertEquals(question.isRequired(), copy.isRequired());
-    assertEquals(question.getAnswer(), copy.getAnswer());
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+    yesNo.answer("Yes");
+
+    Question copy = yesNo.copy();
+    assertTrue(copy instanceof YesNo);
+    assertEquals(yesNo.getPrompt(), copy.getPrompt());
+    assertEquals(yesNo.isRequired(), copy.isRequired());
+    assertEquals(yesNo.getAnswer(), copy.getAnswer());
+  }
+
+  @Test
+  public void testGetPrompt() {
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+
+    assertEquals("Sample Yes/No Question", yesNo.getPrompt());
+  }
+
+  @Test
+  public void testIsRequired() {
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+
+    assertTrue(yesNo.isRequired());
+  }
+
+  @Test
+  public void testGetAnswer() {
+    YesNo yesNo = new YesNo("Sample Yes/No Question", true);
+    yesNo.answer("No");
+
+    assertEquals("No", yesNo.getAnswer());
   }
 }

@@ -3,6 +3,7 @@ package cs5004.questionnaire;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -22,72 +23,59 @@ public class QuestionnaireImpl implements Questionnaire {
     questions = new HashMap<>();
   }
 
-  /**
-   * Adds a question to the questionnaire.
-   *
-   * @param identifier the identifier for the question
-   * @param q the question to add
-   * @throws IllegalArgumentException if the identifier is already in use
-   */
   @Override
   public void addQuestion(String identifier, Question q) {
+    if (identifier == null || identifier.isEmpty()) {
+      // Check if the identifier is null or empty
+      throw new IllegalArgumentException("Invalid input");
+    }
     if (questions.containsKey(identifier)) {
-      // Check if the identifier is already in use
+      // Check if the identifier already exists
       throw new IllegalArgumentException("Invalid input");
     }
     // Add the question to the questionnaire map
     questions.put(identifier, q);
   }
 
-  /**
-   * Removes a question from the questionnaire.
-   *
-   * @param identifier the identifier of the question to remove
-   */
   @Override
   public void removeQuestion(String identifier) {
+    // Check if the identifier is already in use
+    if (!questions.containsKey(identifier)) {
+      throw new NoSuchElementException("Question not found");
+    }
     questions.remove(identifier);
   }
 
-  /**
-   * Gets the question at the specified index.
-   *
-   * @param num the index of the question
-   * @return the question at the specified index
-   * @throws IllegalArgumentException if the index is out of range
-   */
   @Override
   public Question getQuestion(int num) {
-    // Get a list of all questions in the questionnaire
-    List<Question> questionLists = new ArrayList<>(questions.values());
     // Check if the index is out of range
-    if (num < 0 || num >= questionLists.size()) {
-      throw new IllegalArgumentException("Invalid input");
+    if (num < 1 || num > questions.size()) {
+      throw new IndexOutOfBoundsException("No such question 1: " + num);
     }
-    return questionLists.get(num);
+    // Get a list of all questions in the questionnaire
+    List<Question> sortedQuestions = new ArrayList<>(questions.values());
+    // Check if the index is out of range
+    if (num > sortedQuestions.size()) {
+      throw new IndexOutOfBoundsException("No such question 2: " + num);
+    }
+    return sortedQuestions.get(num - 1);
   }
 
-  /**
-   * Gets the question with the specified identifier.
-   *
-   * @param identifier the identifier of the question
-   * @return the question with the specified identifier
-   * @throws NoSuchElementException if the question with the specified identifier does not exist
-   */
   @Override
   public Question getQuestion(String identifier) {
-    // Check if the question with the specified identifier exists
+    if (identifier == null || identifier.isEmpty()) {
+      // Check if the identifier is null or empty
+      throw new IllegalArgumentException("Invalid input: Identifier cannot be empty");
+    }
+
     if (!questions.containsKey(identifier)) {
+      // Check if the identifier exists in the map
       throw new NoSuchElementException("Invalid input");
     }
+
     return questions.get(identifier);
   }
 
-  /**
-   * Gets a list of all required questions in the questionnaire.
-   *
-   * @return a list of all required questions
-   */
   @Override
   public List<Question> getRequiredQuestions() {
     List<Question> requiredQuestions = new ArrayList<>();
@@ -101,11 +89,6 @@ public class QuestionnaireImpl implements Questionnaire {
     return requiredQuestions;
   }
 
-  /**
-   * Gets a list of all optional questions in the questionnaire.
-   *
-   * @return a list of all optional questions
-   */
   @Override
   public List<Question> getOptionalQuestions() {
     List<Question> optionalQuestions = new ArrayList<>();
@@ -119,11 +102,6 @@ public class QuestionnaireImpl implements Questionnaire {
     return optionalQuestions;
   }
 
-  /**
-   * Checks if the questionnaire is complete.
-   *
-   * @return true if the questionnaire is complete, false otherwise
-   */
   @Override
   public boolean isComplete() {
     for (Question question : questions.values()) {
@@ -135,11 +113,6 @@ public class QuestionnaireImpl implements Questionnaire {
     return true;
   }
 
-  /**
-   * Gets a list of all responses provided in the questionnaire.
-   *
-   * @return a list of all responses
-   */
   @Override
   public List<String> getResponses() {
     List<String> responses = new ArrayList<>();
@@ -154,59 +127,43 @@ public class QuestionnaireImpl implements Questionnaire {
     return responses;
   }
 
-  /**
-   * Filters the questionnaire based on a predicate.
-   *
-   * @param pq the predicate to filter the questionnaire
-   * @return a filtered questionnaire
-   */
   @Override
   public Questionnaire filter(Predicate<Question> pq) {
     QuestionnaireImpl filteredQuestionnaire = new QuestionnaireImpl();
     for (Map.Entry<String, Question> entry : questions.entrySet()) {
+      String identifier = entry.getKey();
       Question originalQuestion = entry.getValue();
-      Question copiedQuestion = originalQuestion.copy();
       // Create a copy of the original question
+      Question copiedQuestion = originalQuestion.copy();
       if (pq.test(copiedQuestion)) {
-        // Check if the copied question satisfies the predicate
-        filteredQuestionnaire.addQuestion(entry.getKey(), copiedQuestion);
-        // Add the copied question to the filtered questionnaire
+        filteredQuestionnaire.addQuestion(identifier, copiedQuestion);
       }
     }
     return filteredQuestionnaire;
   }
 
-  /**
-   * Sorts the questions in the questionnaire using the specified comparator.
-   *
-   * @param comp the comparator to sort the questions
-   */
   @Override
   public void sort(Comparator<Question> comp) {
     // Get a list of all questions in the questionnaire
     List<Question> questionList = new ArrayList<>(questions.values());
-    questionList.sort(comp);  // Sort the question list using the comparator
-    questions.clear();  // Clear the current questions in the questionnaire
+    // Sort the question list using the comparator
+    questionList.sort(comp);
+
+    Map<String, Question> sortedQuestions = new LinkedHashMap<>();
     for (Question question : questionList) {
       for (Map.Entry<String, Question> entry : questions.entrySet()) {
         // Find the corresponding entry for the question in the questionnaire
-        if (entry.getKey().equals(question)) {
+        if (entry.getValue().equals(question)) {
           // Add the question back to the questionnaire with the correct ordering
-          questions.put(entry.getKey(), question);
+          sortedQuestions.put(entry.getKey(), question);
           break;
         }
       }
     }
+
+    questions = sortedQuestions;
   }
 
-  /**
-   * Applies a folding operation to the questions in the questionnaire.
-   *
-   * @param bf   the binary function to apply to each question and the accumulator
-   * @param seed the initial value of the accumulator
-   * @param <R>  the type of the result
-   * @return the result of the folding operation
-   */
   @Override
   public <R> R fold(BiFunction<Question, R, R> bf, R seed) {
     // Initialize the result with the seed value
@@ -218,19 +175,22 @@ public class QuestionnaireImpl implements Questionnaire {
     return result;
   }
 
-  /**
-   * Returns a string representation of the questionnaire.
-   *
-   * @return a string representation of the questionnaire
-   */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     for (Question question : questions.values()) {
       sb.append("Question: ").append(question.getPrompt()).append("\n\n");
-      sb.append("Answer: ").append(question.getAnswer()).append("\n\n");
+      String answer = question.getAnswer();
+      if (answer != null && !answer.isEmpty()) {
+        // Convert the answer to lowercase
+        answer = answer.toLowerCase();
+      } else {
+        answer = ""; // Handle empty answers
+      }
+      sb.append("Answer: ").append(answer).append("\n\n");
     }
     return sb.toString();
   }
 }
+
 

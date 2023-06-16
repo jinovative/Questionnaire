@@ -32,11 +32,10 @@ public class ShortAnswer implements Question {
 
   @Override
   public void answer(String answer) {
-    if (answer.length() <= 280) {
-      this.answer = answer;
-    } else {
+    if (answer == null || answer.length() > 280) {
       throw new IllegalArgumentException("Invalid input");
     }
+    this.answer = answer;
   }
 
   @Override

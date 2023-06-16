@@ -1,79 +1,82 @@
 package cs5004.questionnaire;
 
-import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.Assert.*;
 
 /**
  * Tests for the {@link ShortAnswer} class.
  */
 public class ShortAnswerTest {
 
-  private ShortAnswer question;
-
-  /**
-   * Sets up the test fixture by creating a {@link ShortAnswer} instance.
-   */
-  @Before
-  public void setUp() {
-    question = new ShortAnswer("Enter your name:", true);
-  }
-
-  /**
-   * Tests the {@link ShortAnswer#getPrompt()} method.
-   */
   @Test
-  public void testGetPrompt() {
-    assertEquals("Enter your name:", question.getPrompt());
+  public void testConstructor_ValidArguments() {
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+
+    assertEquals("Sample Short Answer Question", shortAnswer.getPrompt());
+    assertTrue(shortAnswer.isRequired());
+    assertEquals("", shortAnswer.getAnswer());
   }
 
-  /**
-   * Tests the {@link ShortAnswer#isRequired()} method.
-   */
-  @Test
-  public void testIsRequired() {
-    assertTrue(question.isRequired());
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructor_NullPrompt() {
+    new ShortAnswer(null, true); //Invalid input
   }
 
-  /**
-   * Tests the {@link ShortAnswer#answer(String)} method with a valid input (within the character limit).
-   */
   @Test
   public void testAnswer_ValidInput() {
-    String answer = "John Doe";
-    question.answer(answer);
-    assertEquals(answer, question.getAnswer());
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+
+    shortAnswer.answer("Valid Answer");
+    assertEquals("Valid Answer", shortAnswer.getAnswer());
   }
 
-  /**
-   * Tests the {@link ShortAnswer#answer(String)} method with an invalid input (exceeds the character limit).
-   * Expects an {@link IllegalArgumentException} to be thrown.
-   */
   @Test(expected = IllegalArgumentException.class)
-  public void testAnswer_InvalidInput() {
-    String answer = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-    question.answer(answer);
+  public void testAnswer_NullAnswer() {
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+
+    shortAnswer.answer(null);
   }
 
-  /**
-   * Tests the {@link ShortAnswer#getAnswer()} method.
-   */
-  @Test
-  public void testGetAnswer() {
-    assertEquals("", question.getAnswer());
+  @Test(expected = IllegalArgumentException.class)
+  public void testAnswer_InvalidAnswer() { //Invalid input
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+
+    shortAnswer.answer("This is a long answer that exceeds the maximum limit of 280 characters");
   }
 
-  /**
-   * Tests the {@link ShortAnswer#copy()} method.
-   */
   @Test
   public void testCopy() {
-    String answer = "John Doe";
-    question.answer(answer);
-    Question copy = question.copy();
-    assertEquals(question.getPrompt(), copy.getPrompt());
-    assertEquals(question.isRequired(), copy.isRequired());
-    assertEquals(question.getAnswer(), copy.getAnswer());
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+    shortAnswer.answer("Valid Answer");
+
+    Question copy = shortAnswer.copy();
+    assertTrue(copy instanceof ShortAnswer);
+    assertEquals(shortAnswer.getPrompt(), copy.getPrompt());
+    assertEquals(shortAnswer.isRequired(), copy.isRequired());
+    assertEquals(shortAnswer.getAnswer(), copy.getAnswer());
+  }
+
+  @Test
+  public void testGetPrompt() {
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+
+    assertEquals("Sample Short Answer Question", shortAnswer.getPrompt());
+  }
+
+  @Test
+  public void testIsRequired() {
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+
+    assertTrue(shortAnswer.isRequired());
+  }
+
+  @Test
+  public void testGetAnswer() {
+    ShortAnswer shortAnswer = new ShortAnswer("Sample Short Answer Question", true);
+    shortAnswer.answer("Valid Answer");
+
+    assertEquals("Valid Answer", shortAnswer.getAnswer());
   }
 }

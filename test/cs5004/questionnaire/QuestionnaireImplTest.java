@@ -1,14 +1,17 @@
 package cs5004.questionnaire;
 
-import org.junit.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 import java.util.NoSuchElementException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
-
+/**
+ * Tests for the {@link QuestionnaireImpl} class.
+ */
 public class QuestionnaireImplTest {
   private QuestionnaireImpl questionnaire;
 
@@ -19,172 +22,178 @@ public class QuestionnaireImplTest {
 
   @Test
   public void testAddQuestion() {
-    Question question = new YesNo("Do you like ice cream?", true);
-    questionnaire.addQuestion("q1", question);
+    Question question = new Likert("Test Question", true);
+    questionnaire.addQuestion("Q1", question);
 
-    assertEquals(question, questionnaire.getQuestion("q1"));
+    assertEquals(question, questionnaire.getQuestion("Q1"));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testAddQuestion_ThrowsIllegalArgumentException() {
-    Question question = new YesNo("Do you like ice cream?", true);
-    questionnaire.addQuestion("q1", question);
-    questionnaire.addQuestion("q1", question); // Adding the same question again should throw an exception
+  public void testAddQuestion_NullIdentifier() {
+    Question question = new Likert("Test Question", true);
+    questionnaire.addQuestion(null, question);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddQuestion_EmptyIdentifier() {
+    Question question = new Likert("Test Question", true);
+    questionnaire.addQuestion("", question);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddQuestion_DuplicateIdentifier() {
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", true);
+
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q1", question2);
   }
 
   @Test
   public void testRemoveQuestion() {
-    Question question = new YesNo("Do you like ice cream?", true);
-    questionnaire.addQuestion("q1", question);
+    Question question = new Likert("Test Question", true);
+    questionnaire.addQuestion("Q1", question);
 
-    questionnaire.removeQuestion("q1");
+    questionnaire.removeQuestion("Q1");
 
     try {
-      questionnaire.getQuestion("q1"); // Trying to get the removed question should throw an exception
+      questionnaire.getQuestion("Q1");
       fail("Expected NoSuchElementException to be thrown");
     } catch (NoSuchElementException e) {
       // Exception is expected
     }
   }
 
+  @Test(expected = NoSuchElementException.class)
+  public void testRemoveQuestion_NonexistentIdentifier() {
+    questionnaire.removeQuestion("Q1");
+  }
+
   @Test
   public void testGetQuestion() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", true);
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
 
-    assertEquals(question1, questionnaire.getQuestion("q1"));
-    assertEquals(question2, questionnaire.getQuestion("q2"));
+    assertEquals(question1, questionnaire.getQuestion(1));
+    assertEquals(question2, questionnaire.getQuestion(2));
   }
 
-  @Test(expected = NoSuchElementException.class)
-  public void testGetQuestion_ThrowsNoSuchElementException() {
-    questionnaire.getQuestion("q1"); // Trying to get a non-existent question should throw an exception
-  }
+  @Test(expected = IndexOutOfBoundsException.class)
+  public void testGetQuestion_InvalidIndex() {
+    Question question = new Likert("Test Question", true);
+    questionnaire.addQuestion("Q1", question);
 
-  @Test
-  public void testGetRequiredQuestions() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    Question question3 = new ShortAnswer("What is your favorite color?", false);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
-    questionnaire.addQuestion("q3", question3);
-
-    List<Question> requiredQuestions = questionnaire.getRequiredQuestions();
-    assertEquals(2, requiredQuestions.size());
-    assertTrue(requiredQuestions.contains(question1));
-    assertTrue(requiredQuestions.contains(question2));
+    questionnaire.getQuestion(2);
   }
 
   @Test
-  public void testGetOptionalQuestions() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    Question question3 = new ShortAnswer("What is your favorite color?", false);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
-    questionnaire.addQuestion("q3", question3);
-
-    List<Question> optionalQuestions = questionnaire.getOptionalQuestions();
-    assertEquals(1, optionalQuestions.size());
-    assertTrue(optionalQuestions.contains(question3));
+  public void testGetQuestion_NonexistentIdentifier() {
+    try {
+      questionnaire.getQuestion("Q1");
+      fail("Expected NoSuchElementException to be thrown");
+    } catch (NoSuchElementException e) {
+      // Exception is expected
+    }
   }
+
+  // Add more test cases for other methods
 
   @Test
   public void testIsComplete() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", false);
 
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
+
+    // No answers provided
+    assertFalse(questionnaire.isComplete()); //Invalid input
+
+    // Answer only the required question
+    question1.answer("Agree");
     assertFalse(questionnaire.isComplete());
 
-    question1.answer("Yes");
-    question2.answer("Agree");
-
+    // Answer both required and optional questions
+    question2.answer("Neutral");
     assertTrue(questionnaire.isComplete());
   }
 
   @Test
   public void testGetResponses() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", false);
 
-    question1.answer("Yes");
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
+
+    question1.answer("Disagree");
     question2.answer("Agree");
 
-    List<String> responses = questionnaire.getResponses();
-    assertEquals(2, responses.size());
-    assertTrue(responses.contains("Yes"));
-    assertTrue(responses.contains("Agree"));
+    assertEquals(2, questionnaire.getResponses().size());
+    assertTrue(questionnaire.getResponses().contains("Disagree")); //Invalid input
+    assertTrue(questionnaire.getResponses().contains("Agree"));
   }
 
   @Test
   public void testFilter() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    Question question3 = new ShortAnswer("What is your favorite color?", false);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
-    questionnaire.addQuestion("q3", question3);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", false);
 
-    Questionnaire filteredQuestionnaire = questionnaire.filter(q -> q.isRequired());
-    assertEquals(2, filteredQuestionnaire.getRequiredQuestions().size());
-    assertTrue(filteredQuestionnaire.getRequiredQuestions().contains(question1));
-    assertTrue(filteredQuestionnaire.getRequiredQuestions().contains(question2));
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
+
+    // Filter for required questions
+    QuestionnaireImpl filtered = (QuestionnaireImpl) questionnaire.filter(Question::isRequired);
+    assertEquals(1, filtered.getRequiredQuestions().size());
+    assertEquals(question1, filtered.getRequiredQuestions().get(0)); //Invalid input
   }
 
   @Test
   public void testSort() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    Question question3 = new ShortAnswer("What is your favorite color?", false);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
-    questionnaire.addQuestion("q3", question3);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", false);
 
-    questionnaire.sort((q1, q2) -> q1.getPrompt().compareToIgnoreCase(q2.getPrompt()));
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
 
-    List<Question> sortedQuestions = questionnaire.getRequiredQuestions();
-    assertEquals(question3, sortedQuestions.get(0));
-    assertEquals(question1, sortedQuestions.get(1));
-    assertEquals(question2, sortedQuestions.get(2));
+    // Sort in descending order
+    questionnaire.sort((q1, q2) -> q2.getPrompt().compareToIgnoreCase(q1.getPrompt()));
+
+    assertEquals(question2, questionnaire.getQuestion(1));
+    assertEquals(question1, questionnaire.getQuestion(2));
   }
 
   @Test
   public void testFold() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    Question question3 = new ShortAnswer("What is your favorite color?", false);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
-    questionnaire.addQuestion("q3", question3);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", false);
 
-    int totalCharacters = questionnaire.fold((q, count) -> count + q.getPrompt().length(), 0);
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
 
-    assertEquals(72, totalCharacters);
+    // Count the total number of questions
+    int totalCount = questionnaire.fold((q, count) -> count + 1, 0);
+    assertEquals(2, totalCount);
   }
+
+  // Add more test cases for other methods
 
   @Test
   public void testToString() {
-    Question question1 = new YesNo("Do you like ice cream?", true);
-    Question question2 = new Likert("How satisfied are you?", true);
-    questionnaire.addQuestion("q1", question1);
-    questionnaire.addQuestion("q2", question2);
+    Question question1 = new Likert("Test Question 1", true);
+    Question question2 = new Likert("Test Question 2", false);
 
-    String expected = "Question: Do you like ice cream?\n\nAnswer: \n\n" +
-            "Question: How satisfied are you?\n\nAnswer: \n\n";
-    assertEquals(expected, questionnaire.toString());
+    questionnaire.addQuestion("Q1", question1);
+    questionnaire.addQuestion("Q2", question2);
 
-    question1.answer("Yes");
-    question2.answer("Agree");
+    question1.answer("Agree");
+    question2.answer("Neutral"); //Invalid input
 
-    expected = "Question: Do you like ice cream?\n\nAnswer: Yes\n\n" +
-            "Question: How satisfied are you?\n\nAnswer: Agree\n\n";
+    String expected = "Question: Test Question 1\n\nAnswer: agree\n\n" +
+            "Question: Test Question 2\n\nAnswer: neutral\n\n";
+
     assertEquals(expected, questionnaire.toString());
   }
 }

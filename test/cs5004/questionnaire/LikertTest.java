@@ -1,79 +1,87 @@
 package cs5004.questionnaire;
 
-import org.junit.Before;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests for the {@link Likert} class.
  */
 public class LikertTest {
 
-  private Likert question;
-
-  /**
-   * Sets up the test fixture by creating a {@link Likert} instance.
-   */
-  @Before
-  public void setUp() {
-    question = new Likert("I enjoy programming.", true);
-  }
-
-  /**
-   * Tests the {@link Likert#getPrompt()} method.
-   */
   @Test
-  public void testGetPrompt() {
-    assertEquals("I enjoy programming.", question.getPrompt());
+  public void testConstructor_ValidArguments() {
+    Likert likert = new Likert("Sample Likert Question", true);
+
+    assertEquals("Sample Likert Question", likert.getPrompt());
+    assertTrue(likert.isRequired());
+    assertEquals("", likert.getAnswer());
   }
 
-  /**
-   * Tests the {@link Likert#isRequired()} method.
-   */
-  @Test
-  public void testIsRequired() {
-    assertTrue(question.isRequired());
-  }
-
-  /**
-   * Tests the {@link Likert#answer(String)} method with a valid input.
-   */
-  @Test
-  public void testAnswer_ValidInput() {
-    String answer = "Agree";
-    question.answer(answer);
-    assertEquals(answer.toLowerCase(), question.getAnswer());
-  }
-
-  /**
-   * Tests the {@link Likert#answer(String)} method with an invalid input.
-   * Expects an {@link IllegalArgumentException} to be thrown.
-   */
   @Test(expected = IllegalArgumentException.class)
-  public void testAnswer_InvalidInput() {
-    String answer = "Invalid Option";
-    question.answer(answer);
+  public void testConstructor_NullPrompt() {
+    new Likert(null, true); //Invalid input
   }
 
-  /**
-   * Tests the {@link Likert#getAnswer()} method.
-   */
   @Test
-  public void testGetAnswer() {
-    assertEquals("", question.getAnswer());
+  public void testAnswer_ValidOption() {
+    Likert likert = new Likert("Sample Likert Question", true);
+
+    likert.answer("Agree");
+    assertEquals("agree", likert.getAnswer());
+
+    likert.answer("Strongly Disagree");
+    assertEquals("strongly disagree", likert.getAnswer());
   }
 
-  /**
-   * Tests the {@link Likert#copy()} method.
-   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testAnswer_InvalidOption() {
+    Likert likert = new Likert("Sample Likert Question", true);
+
+    likert.answer("Invalid Option");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAnswer_NullOption() {
+    Likert likert = new Likert("Sample Likert Question", true);
+
+    likert.answer(null); //Invalid input
+  }
+
   @Test
   public void testCopy() {
-    String answer = "Agree";
-    question.answer(answer);
-    Question copy = question.copy();
-    assertEquals(question.getPrompt(), copy.getPrompt());
-    assertEquals(question.isRequired(), copy.isRequired());
-    assertEquals(question.getAnswer(), copy.getAnswer());
+    Likert likert = new Likert("Sample Likert Question", true);
+    likert.answer("Agree");
+
+    Question copy = likert.copy();
+    assertTrue(copy instanceof Likert);
+    assertEquals(likert.getPrompt(), copy.getPrompt());
+    assertEquals(likert.isRequired(), copy.isRequired());
+    assertEquals(likert.getAnswer(), copy.getAnswer());
+  }
+
+  @Test
+  public void testGetPrompt() {
+    Likert likert = new Likert("Sample Likert Question", true);
+
+    assertEquals("Sample Likert Question", likert.getPrompt());
+  }
+
+  @Test
+  public void testIsRequired() {
+    Likert likert = new Likert("Sample Likert Question", true);
+
+    assertTrue(likert.isRequired());
+  }
+
+  @Test
+  public void testGetAnswer() {
+    Likert likert = new Likert("Sample Likert Question", true);
+    likert.answer("Agree");
+
+    assertEquals("agree", likert.getAnswer());
   }
 }
